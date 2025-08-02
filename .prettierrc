@@ -1,0 +1,7 @@
+{
+  "plugins": ["@shopify/prettier-plugin-liquid"],
+  "pluginSearchDirs": ["."],
+  "singleQuote": true,
+  "bracketSpacing": true,
+  "tabWidth": 4
+}

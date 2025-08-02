@@ -1,0 +1,483 @@
+<!-- Tablet to Desktop: Current Product Grid -->
+<div class='my-custom-section desktop-only'>
+    <div class='product-grid'>
+        {% for product in collections.all.products %}
+            <div
+                class='product-card'
+                data-title='{{ product.title }}'
+                data-url='{{ product.url }}'
+                data-image='{{ product.featured_image | img_url: 'large' }}'
+                data-price='{{ product.price | money }}'
+            >
+                <a class='product-link' href='{{ product.url }}'>
+                    <div class='image-wrapper'>
+                        <img
+                            class='product-img'
+                            src='{{ product.featured_image | img_url: '100x100' }}'
+                            alt='{{ product.title }}'
+                        >
+                        <div class='hover-info hidden'>
+                            <div class='hover-title'>{{ product.title }}</div>
+                            <div class='hover-price'>{{ product.price | money }}</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Mobile Only: Simple Product List -->
+<div class='mobile-product-list mobile-only'>
+    <ul>
+        {% for product in collections.all.products %}
+            <li>
+                <a href='{{ product.url }}' class='product-link'>
+                    <img
+                        src='{{ product.featured_image | img_url: '100x100' }}'
+                        alt='{{ product.title }}'
+                        class='product-image'
+                    >
+                    <div class='product-details'>
+                        <div class='product-title'>{{ product.title }}</div>
+                        <div class='product-price'>{{ product.price | money }}</div>
+                    </div>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class='larger-display hidden' id='largerDisplay'>
+    <img id='largerImage' src='' alt='Product Preview'>
+</div>
+
+<script>
+    const displayBox = document.getElementById('largerDisplay');
+    const imageElement = document.getElementById('largerImage');
+    const cards = document.querySelectorAll('.product-card');
+
+    for (let i = 0; i < cards.length; i++) {
+        const card = cards[i];
+        const wrapper = card.querySelector('.image-wrapper');
+        const image = card.querySelector('.product-img');
+        const hoverInfo = card.querySelector('.hover-info');
+
+        // Hover on wrapper (includes image + hover-info)
+        wrapper.addEventListener('mouseenter', () => {
+            image.classList.add('hidden');
+            hoverInfo.classList.remove('hidden');
+            hoverInfo.classList.add('fade-in');
+        });
+
+        wrapper.addEventListener('mouseleave', () => {
+            hoverInfo.classList.remove('fade-in');
+            hoverInfo.classList.add('fade-out');
+
+            hoverInfo.addEventListener(
+                'animationend',
+                () => {
+                    hoverInfo.classList.add('hidden');
+                    hoverInfo.classList.remove('fade-in', 'fade-out');
+                    image.classList.remove('hidden');
+                },
+                { once: true },
+            );
+        });
+
+        card.addEventListener('mouseenter', () => {
+            const imageUrl = card.dataset.image;
+
+            displayBox.classList.remove('hidden');
+            displayBox.classList.add('fade-in');
+
+            cards.forEach((c) => c.classList.add('blur'));
+            makeLarger(imageUrl);
+        });
+
+        card.addEventListener('mouseleave', () => {
+            displayBox.classList.remove('fade-in');
+            displayBox.classList.add('fade-out');
+
+            displayBox.addEventListener(
+                'animationend',
+                () => {
+                    displayBox.classList.add('hidden');
+                    displayBox.classList.remove('fade-out');
+                },
+                { once: true },
+            );
+
+            cards.forEach((c) => c.classList.remove('blur'));
+        });
+    }
+
+    displayBox.addEventListener('mouseleave', () => {
+        displayBox.classList.remove('fade-in');
+        displayBox.classList.add('fade-out');
+
+        displayBox.addEventListener(
+            'animationend',
+            () => {
+                displayBox.classList.add('hidden');
+                displayBox.classList.remove('fade-out');
+            },
+            { once: true },
+        );
+
+        cards.forEach((card) => card.classList.remove('blur'));
+    });
+
+    function makeLarger(image) {
+        imageElement.src = image;
+    }
+</script>
+
+<style>
+    /* Desktop & tablet (min-width 768px) show original grid */
+    .desktop-only {
+        display: block;
+    }
+    /* Mobile (below 768px) hide original grid */
+    @media (max-width: 767px) {
+        .desktop-only {
+            display: none;
+        }
+    }
+
+    /* Mobile only list */
+    .mobile-only {
+        display: none;
+    }
+    @media (max-width: 767px) {
+        .mobile-only {
+            display: block;
+            padding: 1rem;
+        }
+    }
+
+    /* You can keep your existing styles below */
+    .my-custom-section {
+        padding: 2rem;
+    }
+
+    .product-grid {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .product-card {
+        width: 100px;
+        transition:
+            transform 0.3s ease,
+            opacity 0.3s ease;
+        cursor: pointer;
+    }
+
+    .image-wrapper {
+        position: relative;
+        width: 100%;
+        height: 100px;
+    }
+
+    .product-img,
+    .hover-info {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        color: black;
+        transition: opacity 0.1s ease;
+    }
+
+    .product-img {
+        transition: transform 0.1s ease;
+    }
+
+    .product-card:hover .product-img {
+        transform: scale(1.08);
+    }
+
+    .hover-info {
+        background: inherit;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 5px;
+        box-sizing: border-box;
+        font-size: 12px;
+        opacity: 0;
+    }
+
+    .hover-title {
+        font-weight: bold;
+        margin-bottom: 4px;
+    }
+
+    .hover-price {
+        font-weight: bold;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .blur {
+        opacity: 0.3;
+        transform: scale(0.98);
+        transition: 0.2s ease;
+    }
+
+    .larger-display {
+        position: fixed;
+        z-index: 10;
+        width: 100%;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.3);
+        top: 0;
+        left: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        opacity: 0;
+    }
+
+    .larger-display img {
+        height: 100vh;
+        width: auto;
+        object-fit: contain;
+        display: block;
+    }
+
+    .fade-in {
+        animation: fadeIn 0.15s ease forwards;
+    }
+
+    .fade-out {
+        animation: fadeOut 0.15s ease forwards;
+    }
+
+    @keyframes fadeIn {
+        0% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeOut {
+        0% {
+            opacity: 1;
+        }
+        100% {
+            opacity: 0;
+        }
+    }
+
+    /* Desktop & tablet (min-width 768px) show original grid */
+    .desktop-only {
+        display: block;
+    }
+    @media (max-width: 767px) {
+        .desktop-only {
+            display: none;
+        }
+    }
+
+    /* Mobile only list */
+    .mobile-only {
+        display: none;
+    }
+    @media (max-width: 767px) {
+        .mobile-only {
+            display: block;
+            padding: 1rem 0;
+            background: #fff;
+        }
+    }
+
+    .mobile-product-list ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .mobile-product-list ul li {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding: 0 1rem;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 1rem;
+    }
+
+    .mobile-product-list ul li:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .mobile-product-list .product-link {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: inherit;
+        width: 100%;
+    }
+
+    .mobile-product-list .product-image {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        margin-right: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .mobile-product-list .product-details {
+        flex: 1;
+    }
+
+    .mobile-product-list .product-title {
+        font-weight: bold;
+        font-size: 16px;
+        color: #333;
+    }
+
+    .mobile-product-list .product-price {
+        font-size: 14px;
+        color: #666;
+        margin-top: 0.25rem;
+    }
+
+    /* You can keep your existing styles below */
+    .my-custom-section {
+        padding: 2rem;
+    }
+
+    .product-grid {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .product-card {
+        width: 100px;
+        transition:
+            transform 0.3s ease,
+            opacity 0.3s ease;
+        cursor: pointer;
+    }
+
+    .image-wrapper {
+        position: relative;
+        width: 100%;
+        height: 100px;
+    }
+
+    .product-img,
+    .hover-info {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        color: black;
+        transition: opacity 0.1s ease;
+    }
+
+    .product-img {
+        transition: transform 0.1s ease;
+    }
+
+    .product-card:hover .product-img {
+        transform: scale(1.08);
+    }
+
+    .hover-info {
+        background: inherit;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 5px;
+        box-sizing: border-box;
+        font-size: 12px;
+        opacity: 0;
+    }
+
+    .hover-title {
+        font-weight: bold;
+        margin-bottom: 4px;
+    }
+
+    .hover-price {
+        font-weight: bold;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .blur {
+        opacity: 0.3;
+        transform: scale(0.98);
+        transition: 0.2s ease;
+    }
+
+    .larger-display {
+        position: fixed;
+        z-index: 10;
+        width: 100%;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.3);
+        top: 0;
+        left: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        opacity: 0;
+    }
+
+    .larger-display img {
+        height: 100vh;
+        width: auto;
+        object-fit: contain;
+        display: block;
+    }
+
+    .fade-in {
+        animation: fadeIn 0.15s ease forwards;
+    }
+
+    .fade-out {
+        animation: fadeOut 0.15s ease forwards;
+    }
+
+    @keyframes fadeIn {
+        0% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeOut {
+        0% {
+            opacity: 1;
+        }
+        100% {
+            opacity: 0;
+        }
+    }
+</style>
